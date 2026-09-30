@@ -2,7 +2,7 @@ import React from "react";
 import Title from "./Title";
 import CarCard from "../components/CarCard";
 import { assets, dummyCarData } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const FeaturedSection = () => {
   const navigate = useNavigate();
@@ -17,12 +17,13 @@ const FeaturedSection = () => {
 
         <div className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {dummyCarData.slice(0, 6).map((car) => (
-            <div
+            <Link
               key={car._id}
-              className="h-full transition duration-300 hover:-translate-y-1"
+              to={`/car-deatils/${car._id}`}
+              className="block h-full rounded-xl transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <CarCard car={car} />
-            </div>
+            </Link>
           ))}
         </div>
 
