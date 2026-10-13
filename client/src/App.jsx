@@ -19,7 +19,7 @@ const App = () => {
 
   return (
     <>
-      <Login showLogin={showLogin} setShowLogin={setShowLogin} />
+      {showLogin && <Login setShowLogin={setShowLogin} />}
       {!isOwnerPath && <Navbar setShowLogin={setShowLogin} />}
 
       <Routes>
