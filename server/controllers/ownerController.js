@@ -113,3 +113,22 @@ export const deleteCar = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+// API to get Dashboard Data
+export const getDashboardData = async (req, res) => {
+  try{
+
+    const { _id,role } = req.user;
+    if(role !== "owner"){
+      return res.status(403).json({ success: false, message: "You are not authorized to access this data" });
+    }
+
+    const cars = await Car.find({ owner: _id });
+    
+
+  }catch(error){
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
