@@ -74,3 +74,15 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+//get user Data using token
+export const getUserData = async (req, res) => {
+  try { 
+    const {user} = req;
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
