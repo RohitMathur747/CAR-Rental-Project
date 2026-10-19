@@ -5,7 +5,7 @@ import Car from "../models/car.js";
 
 const checkAvailability = async (car, pickupDate, returnDate) => {
   const bookings = await Booking.find({
-    car: car._id,
+    car,
     pickupDate: { $lt: returnDate },
     returnDate: { $gt: pickupDate },
   });
@@ -51,6 +51,10 @@ export const createBooking = async (req, res) => {
     }
 
     const carData = await Car.findById(car);
+    if (!carData) {
+      return res.status(404).json({ success: false, message: "Car not found" });
+    }
+
     //calculate the total price for the booking
     const picked = new Date(pickupDate);
     const returned = new Date(returnDate);
@@ -96,7 +100,28 @@ export const getOwnerBookings = async (req, res) => {
       .populate("car user")
       .select("-user.password")
       .sort({ createdAt: -1 });
-    re.json({ success: true, bookings });
+    res.json({ success: true, bookings });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+//Api to change booking status
+export const changeBookingStatus = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { bookingId, Status } = req.body;
+    const booking = await Booking.findById(bookingId);
+
+    if (booking.owner.toString() !== _id.toString()) {
+      return res.json({ success: false, message: "Unauthorized" });
+    }
+
+    booking.status = status;
+    await booking.save();
+
+    res.json({ success: true, message: "Status Updated" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });

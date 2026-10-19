@@ -1,7 +1,8 @@
 import User from "../models/user.js";
 import fs from "fs";
-import imagekit from "../config/imagekit.js";
+import imagekit from "../configs/imageKit.js";
 import Car from "../models/car.js";
+import Booking from "../models/Booking.js";
 
 //change the role of user to owner
 export const changeRoleToOwner = async (req, res) => {
@@ -114,21 +115,83 @@ export const deleteCar = async (req, res) => {
   }
 };
 
-
 // API to get Dashboard Data
 export const getDashboardData = async (req, res) => {
-  try{
-
-    const { _id,role } = req.user;
-    if(role !== "owner"){
-      return res.status(403).json({ success: false, message: "You are not authorized to access this data" });
+  try {
+    const { _id, role } = req.user;
+    if (role !== "owner") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this data",
+      });
     }
 
     const cars = await Car.find({ owner: _id });
-    
 
-  }catch(error){
+    const bookings = await Booking.find({ owner: _id })
+      .populate("car")
+      .sort({ createdAt: -1 });
+
+    const pendingBookings = await Booking.find({
+      owner: _id,
+      status: "pending",
+    });
+    const completedBookings = await Booking.find({
+      owner: _id,
+      status: "confirmed",
+    });
+
+    //calculate monthlyRevenue from bookings where status confirmed
+    const monthlyRevenue = bookings
+      .slice()
+      .filter((booking) => booking.status === "confirmed")
+      .reduce((acc, booking) => acc + booking.price, 0);
+
+    const dashboardData = {
+      totalCars: cars.length,
+      totalBookings: bookings.length,
+      pendingBookings: pendingBookings.length,
+      completeBookings: completeBookings.length,
+      recentBookings: bookings.slice(0, 3),
+      monthlyRevenue,
+    };
+
+    res.json({ success: true, dashboardData });
+  } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
-}
+};
+
+//Api to update user image
+export const updateUserImage = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const imageFile = req.files;
+
+    const fileBuffer = fs.readFileSync(imageFile.path);
+    const response = await imagekit.upload({
+      file: fileBuffer,
+      fileName: imageFile.filename,
+      folder: "/users",
+    });
+
+    //optimize the image using imagekit
+    var optimizeImageUrl = imagekit.url({
+      path: response.filePath,
+      urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+      transformation: [
+        { width: "400" },
+        { format: "webp" }, //convert to webp format
+        { quality: "auto" }, // auto compression
+      ],
+    });
+
+    const image = optimizeImageUrl;
+    await User.findByIdAndUpdate(_id, { image });
+    res.json({ success: true, message: "Image Updated" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
