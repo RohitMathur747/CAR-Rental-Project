@@ -1,13 +1,32 @@
 import { useState } from "react";
 import { assets, menuLinks } from "../assets/assets.js";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext.jsx";
+import { toast } from "react-hot-toast";
 
-const Navbar = ({ setShowLogin }) => {
+const Navbar = () => {
+  const { setShowLogin, user, logout, isOwner, axios, setIsOwner } =
+    useAppContext();
+
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const isHome = location.pathname === "/";
 
   const navigate = useNavigate();
+
+  const changeRole = async () => {
+    try {
+      const { data } = await axios.post("/api/owner/change-role");
+      if (data.success) {
+        setIsOwner(true);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div
@@ -65,24 +84,29 @@ const Navbar = ({ setShowLogin }) => {
           <button
             className="w-full cursor-pointer rounded-lg bg-primary px-8 py-2 text-sm text-white transition-all hover:bg-primary-dull"
             onClick={() => {
-              setOpen(false);
-              setShowLogin(true);
+              {
+                user ? logout() : setOpen(false);
+                setShowLogin(true);
+              }
             }}
           >
-            Login
+            {user ? "Logout" : "Login"}
           </button>
         </div>
       </div>
 
       <div className="hidden items-center gap-4 sm:flex">
-        <button className="cursor-pointer " onClick={() => navigate("/owner")}>
-          Dashboard
+        <button
+          className="cursor-pointer "
+          onClick={() => (isOwner ? navigate("/owner") : changeRole())}
+        >
+          {isOwner ? "Dashboard" : "List cars"}
         </button>
         <button
           className="cursor-pointer px-8 py-2 bg-primary hover:bg-primary-dull transition-all text-white rounded-lg"
           onClick={() => setShowLogin(true)}
         >
-          Login
+          {user ? "Logout" : "Login"}
         </button>
       </div>
 
