@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import fs from "fs";
 import imagekit from "../configs/imageKit.js";
-import Car from "../models/car.js";
+import Car from "../models/Car.js";
 import Booking from "../models/Booking.js";
 
 //change the role of user to owner
