@@ -111,17 +111,30 @@ export const getOwnerBookings = async (req, res) => {
 export const changeBookingStatus = async (req, res) => {
   try {
     const { _id } = req.user;
-    const { bookingId, Status } = req.body;
+    const { bookingId, status } = req.body;
+    if (!bookingId || !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid booking or status" });
+    }
+
     const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
 
     if (booking.owner.toString() !== _id.toString()) {
-      return res.json({ success: false, message: "Unauthorized" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized" });
     }
 
     booking.status = status;
     await booking.save();
 
-    res.json({ success: true, message: "Status Updated" });
+    res.json({ success: true, message: "Status updated" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });

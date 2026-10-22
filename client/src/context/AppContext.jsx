@@ -20,6 +20,7 @@ export const AppProvider = ({ children }) => {
   const [returnDate, setReturnDate] = useState("");
 
   const [cars, setCars] = useState([]);
+  const [ownerBookings, setOwnerBookings] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
 
   //function to check if user is login
@@ -52,6 +53,19 @@ export const AppProvider = ({ children }) => {
       const { data } = await axios.get("/api/owner/dashboard");
       if (data.success) {
         setDashboardData(data.dashboardData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  }, []);
+
+  const fetchOwnerBookings = useCallback(async () => {
+    try {
+      const { data } = await axios.get("/api/bookings/owner");
+      if (data.success) {
+        setOwnerBookings(data.bookings);
       } else {
         toast.error(data.message);
       }
@@ -95,6 +109,9 @@ export const AppProvider = ({ children }) => {
     fetchCars,
     cars,
     setCars,
+    ownerBookings,
+    setOwnerBookings,
+    fetchOwnerBookings,
     dashboardData,
     fetchDashboardData,
     axios,

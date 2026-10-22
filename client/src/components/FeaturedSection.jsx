@@ -1,11 +1,12 @@
-import React from "react";
 import Title from "./Title";
 import CarCard from "../components/CarCard";
-import { assets, dummyCarData } from "../assets/assets";
+import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 
 const FeaturedSection = () => {
   const navigate = useNavigate();
+  const { cars } = useAppContext();
 
   return (
     <section className="bg-gray-100 px-4 py-16 sm:px-6 lg:px-8">
@@ -16,15 +17,20 @@ const FeaturedSection = () => {
         />
 
         <div className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {dummyCarData.slice(0, 6).map((car) => (
+          {cars.slice(0, 6).map((car) => (
             <Link
               key={car._id}
-              to={`/car-deatils/${car._id}`}
+              to={`/car-details/${car._id}`}
               className="block h-full rounded-xl transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <CarCard car={car} />
             </Link>
           ))}
+          {cars.length === 0 && (
+            <p className="col-span-full py-8 text-center text-sm text-gray-500">
+              No vehicles are currently available.
+            </p>
+          )}
         </div>
 
         <button
