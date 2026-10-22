@@ -121,13 +121,19 @@ const ManageCars = () => {
                       scope="row"
                       className="whitespace-nowrap px-6 py-4 font-semibold text-gray-900"
                     >
-                      <p className="font-semibold">
+                      <p className="font-normal">
                         {car.brand} {car.model}
                       </p>
-                      <p className="font-light">
+                      <img
+                        src={car.image}
+                        alt={`${car.brand} ${car.model}`}
+                        className="mt-2 h-20 w-32 rounded-md object-cover"
+                      />
+
+                      {/* <p className="font-light">
                         {car.seating_capacity} . {car.transmission} .{" "}
                         {car.fuel_type}
-                      </p>
+                      </p> */}
                     </th>
                     <td className="px-6 py-4 text-gray-600">{car.category}</td>
                     <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-800">
