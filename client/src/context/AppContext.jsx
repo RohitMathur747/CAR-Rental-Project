@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { createContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -20,6 +20,7 @@ export const AppProvider = ({ children }) => {
   const [returnDate, setReturnDate] = useState("");
 
   const [cars, setCars] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
 
   //function to check if user is login
   const fetchUser = async () => {
@@ -45,6 +46,19 @@ export const AppProvider = ({ children }) => {
       toast.error(error.message);
     }
   };
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const { data } = await axios.get("/api/owner/dashboard");
+      if (data.success) {
+        setDashboardData(data.dashboardData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  }, []);
 
   //function to logout the user
   const logout = () => {
@@ -81,6 +95,8 @@ export const AppProvider = ({ children }) => {
     fetchCars,
     cars,
     setCars,
+    dashboardData,
+    fetchDashboardData,
     axios,
     user,
     setUser,
