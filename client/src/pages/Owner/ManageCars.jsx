@@ -1,35 +1,77 @@
-import { useState } from "react";
-import { assets, dummyCarData } from "../../assets/assets";
-
-const initialCars = dummyCarData.slice(0, 4).map((car) => ({
-  ...car,
-  id: car._id,
-  name: `${car.brand.trim()} ${car.model}`,
-  price: car.pricePerDay,
-  isAvailable: car.isAvailable ?? car.isAvaliable,
-}));
+import { useEffect, useState } from "react";
+import { assets } from "../../assets/assets";
+import { useAppContext } from "../../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const ManageCars = () => {
-  const [cars, setCars] = useState(initialCars);
+  const { isOwner, axios, currency, fetchDashboardData } = useAppContext();
+  const [cars, setCars] = useState([]);
   const [selectedCar, setSelectedCar] = useState(null);
 
-  const toggleAvailability = (id) => {
-    setCars((currentCars) =>
-      currentCars.map((car) =>
-        car.id === id ? { ...car, isAvailable: !car.isAvailable } : car,
-      ),
-    );
-    setSelectedCar((currentCar) =>
-      currentCar?.id === id
-        ? { ...currentCar, isAvailable: !currentCar.isAvailable }
-        : currentCar,
-    );
+  const toggleAvailability = async (carId) => {
+    try {
+      const { data } = await axios.get(`/api/owner/toggle-car/${carId}`);
+      if (data.success) {
+        setCars((currentCars) =>
+          currentCars.map((car) => (car._id === carId ? data.car : car)),
+        );
+        setSelectedCar((currentCar) =>
+          currentCar?._id === carId ? data.car : currentCar,
+        );
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
 
-  const deleteCar = (id) => {
-    setCars((currentCars) => currentCars.filter((car) => car.id !== id));
-    setSelectedCar((currentCar) => (currentCar?.id === id ? null : currentCar));
+  const deleteCar = async (carId) => {
+    try {
+      const { data } = await axios.delete(`/api/owner/delete-car/${carId}`);
+      if (data.success) {
+        setCars((currentCars) =>
+          currentCars.filter((car) => car._id !== carId),
+        );
+        setSelectedCar((currentCar) =>
+          currentCar?._id === carId ? null : currentCar,
+        );
+        await fetchDashboardData();
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
+
+  useEffect(() => {
+    if (!isOwner) return;
+
+    let isMounted = true;
+    const loadOwnerCars = async () => {
+      try {
+        const { data } = await axios.get("/api/owner/cars");
+        if (!isMounted) return;
+
+        if (data.success) {
+          setCars(data.cars);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        if (isMounted) {
+          toast.error(error.response?.data?.message || error.message);
+        }
+      }
+    };
+
+    loadOwnerCars();
+    return () => {
+      isMounted = false;
+    };
+  }, [axios, isOwner]);
 
   return (
     <main className="min-w-0 flex-1 bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
@@ -64,7 +106,7 @@ const ManageCars = () => {
                   <th scope="col" className="px-6 py-4">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-4">
+                  <th scope="col" className="px-6 py-4 float-right me-10">
                     Actions
                   </th>
                 </tr>
@@ -72,30 +114,36 @@ const ManageCars = () => {
               <tbody className="divide-y divide-gray-100">
                 {cars.map((car) => (
                   <tr
-                    key={car.id}
+                    key={car._id}
                     className="transition-colors hover:bg-gray-50"
                   >
                     <th
                       scope="row"
                       className="whitespace-nowrap px-6 py-4 font-semibold text-gray-900"
                     >
-                      <p className="font-semibold">
-                        {car.brand}
-                        {car.model}
+                      <p className="font-normal">
+                        {car.brand} {car.model}
                       </p>
-                      <p className="font-light">
+                      <img
+                        src={car.image}
+                        alt={`${car.brand} ${car.model}`}
+                        className="mt-2 h-20 w-32 rounded-md object-cover"
+                      />
+
+                      {/* <p className="font-light">
                         {car.seating_capacity} . {car.transmission} .{" "}
                         {car.fuel_type}
-                      </p>
+                      </p> */}
                     </th>
                     <td className="px-6 py-4 text-gray-600">{car.category}</td>
                     <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-800">
-                      ${car.price}/day
+                      {currency}
+                      {car.price_per_day}/day
                     </td>
                     <td className="px-6 py-4">
                       <button
                         type="button"
-                        onClick={() => toggleAvailability(car.id)}
+                        onClick={() => toggleAvailability(car._id)}
                         aria-pressed={car.isAvailable}
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                           car.isAvailable
@@ -107,11 +155,11 @@ const ManageCars = () => {
                       </button>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => setSelectedCar(car)}
-                          aria-label={`View ${car.name}`}
+                          aria-label={`View ${car.brand} ${car.model}`}
                           title="View car details"
                           className="rounded-lg p-2 transition-colors hover:bg-blue-50"
                         >
@@ -123,8 +171,8 @@ const ManageCars = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => deleteCar(car.id)}
-                          aria-label={`Delete ${car.name}`}
+                          onClick={() => deleteCar(car._id)}
+                          aria-label={`Delete ${car.brand} ${car.model}`}
                           title="Delete car"
                           className="rounded-lg p-2 transition-colors hover:bg-red-50"
                         >
@@ -172,7 +220,7 @@ const ManageCars = () => {
                   id="car-details-title"
                   className="text-xl font-semibold text-gray-950"
                 >
-                  {selectedCar.name}
+                  {selectedCar.brand} {selectedCar.model}
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">Car details</p>
               </div>
@@ -195,7 +243,8 @@ const ManageCars = () => {
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-500">Price</dt>
                 <dd className="font-medium text-gray-900">
-                  ${selectedCar.price}/day
+                  {currency}
+                  {selectedCar.price_per_day}/day
                 </dd>
               </div>
               <div className="flex justify-between gap-4">

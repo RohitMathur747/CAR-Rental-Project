@@ -1,15 +1,32 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { assets, cityList } from "../assets/assets";
+import { useAppContext } from "../context/AppContext";
 
 const Hero = () => {
   const [pickupLocation, setPickupLocation] = useState("");
+
+  const { pickupDate, setPickupDate, returnDate, setReturnDate, navigate } =
+    useAppContext();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const searchParams = new URLSearchParams({
+      pickupLocation,
+      pickupDate,
+      returnDate,
+    });
+    navigate(`/cars?${searchParams.toString()}`);
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-4 py-8">
       <h1 className="text-4xl md:text-5xl font-semibold">
         Luxury Cars on Rent
       </h1>
-      <form className="mt-6 w-full max-w-5xl rounded-lg bg-white p-3 shadow-md">
+      <form
+        onSubmit={handleSearch}
+        className="mt-6 w-full max-w-5xl rounded-lg bg-white p-3 shadow-md"
+      >
         <div
           className="grid w-full gap-3 rounded-2xl border border-slate-200
          bg-white p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_auto_auto] lg:items-end"
@@ -40,6 +57,8 @@ const Hero = () => {
               id="pickup-Date"
               className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               min={new Date().toISOString().split("T")[0]}
+              value={pickupDate}
+              onChange={(event) => setPickupDate(event.target.value)}
               required
             />
           </div>
@@ -50,7 +69,9 @@ const Hero = () => {
               type="date"
               id="return-Date"
               className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min={new Date().toISOString().split("T")[0]}
+              min={pickupDate || new Date().toISOString().split("T")[0]}
+              value={returnDate}
+              onChange={(event) => setReturnDate(event.target.value)}
               required
             />
           </div>

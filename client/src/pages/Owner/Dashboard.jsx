@@ -1,35 +1,35 @@
-import { assets, dummyCarData, dummyMyBookingsData } from "../../assets/assets";
+import { assets } from "../../assets/assets";
+import { useAppContext } from "../../context/AppContext";
+import { useEffect } from "react";
 
 const Dashboard = () => {
-  const currency = import.meta.env.VITE_CURRENCY || "$";
+  const { dashboardData, fetchDashboardData, isOwner, currency } =
+    useAppContext();
+
   const stats = [
     {
       label: "Total Cars",
-      value: dummyCarData.length,
+      value: dashboardData?.totalCars ?? 0,
       icon: assets.carIconColored,
     },
     {
       label: "Total Bookings",
-      value: dummyMyBookingsData.length,
+      value: dashboardData?.totalBookings ?? 0,
       icon: assets.listIconColored,
     },
     {
       label: "Pending Bookings",
-      value: dummyMyBookingsData.filter(
-        (booking) => booking.status === "pending",
-      ).length,
+      value: dashboardData?.pendingBookings ?? 0,
       icon: assets.cautionIconColored,
     },
     {
       label: "Completed Bookings",
-      value: dummyMyBookingsData.filter(
-        (booking) => booking.status === "completed",
-      ).length,
+      value: dashboardData?.completedBookings ?? 0,
       icon: assets.check_icon,
     },
   ];
 
-  const recentBookings = dummyMyBookingsData.slice(0, 4);
+  const recentBookings = dashboardData?.recentBookings ?? [];
 
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.slice(0, 10).split("-").map(Number);
@@ -45,6 +45,12 @@ const Dashboard = () => {
     pending: "bg-amber-50 text-amber-700",
     completed: "bg-blue-50 text-blue-700",
   };
+
+  useEffect(() => {
+    if (isOwner) {
+      fetchDashboardData();
+    }
+  }, [isOwner, fetchDashboardData]);
 
   return (
     <main className="min-w-0 flex-1 bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
@@ -100,6 +106,11 @@ const Dashboard = () => {
             </p>
 
             <ul className="mt-5 divide-y divide-gray-100">
+              {recentBookings.length === 0 && (
+                <li className="py-6 text-center text-sm text-gray-500">
+                  No bookings yet.
+                </li>
+              )}
               {recentBookings.map((booking) => {
                 const status = booking.status?.toLowerCase() || "pending";
 
@@ -118,7 +129,9 @@ const Dashboard = () => {
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-gray-900">
-                          {booking.car.brand} {booking.car.model}
+                          {booking.car
+                            ? `${booking.car.brand} ${booking.car.model}`
+                            : "Car booking"}
                         </p>
                         <p className="mt-1 text-xs text-gray-500">
                           Booked {formatDate(booking.createdAt)}
@@ -154,7 +167,8 @@ const Dashboard = () => {
             </p>
             <div className="mt-8 flex flex-1 items-center justify-center rounded-lg bg-blue-50 px-4 py-8">
               <p className="text-4xl font-semibold tracking-tight text-primary sm:text-5xl">
-                {currency}1,060
+                {currency}
+                {(dashboardData?.monthlyRevenue ?? 0).toLocaleString()}
               </p>
             </div>
           </article>

@@ -20,7 +20,7 @@ const CarCard = ({ car }) => {
         <div className="absolute bottom-4 left-4 rounded-md bg-black/70 px-3 py-2 text-white">
           <span className="text-lg font-semibold">
             {currency}
-            {car.pricePerDay}
+            {car.price_per_day ?? car.pricePerDay}
           </span>
           <span className="text-sm text-white/80"> / day</span>
         </div>

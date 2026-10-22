@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { dummyMyBookingsData } from "../../assets/assets";
+import { useEffect } from "react";
+import { useAppContext } from "../../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const bookingStatuses = ["Pending", "Confirmed", "Completed", "Cancelled"];
 
@@ -16,19 +17,43 @@ const formatDate = (dateString) => {
 };
 
 const ManageBooking = () => {
-  const [bookings, setBookings] = useState(dummyMyBookingsData.slice(0, 4));
+  const {
+    axios,
+    currency,
+    fetchOwnerBookings,
+    isOwner,
+    ownerBookings: bookings,
+    setOwnerBookings,
+  } = useAppContext();
 
-  const updateBookingStatus = (bookingId, status) => {
-    setBookings((currentBookings) =>
-      currentBookings.map((booking) =>
-        booking._id === bookingId
-          ? { ...booking, status: status.toLowerCase() }
-          : booking,
-      ),
-    );
+  useEffect(() => {
+    if (isOwner) {
+      fetchOwnerBookings();
+    }
+  }, [fetchOwnerBookings, isOwner]);
+
+  const updateBookingStatus = async (bookingId, status) => {
+    try {
+      const { data } = await axios.post("/api/bookings/change-status", {
+        bookingId,
+        status: status.toLowerCase(),
+      });
+      if (data.success) {
+        setOwnerBookings((currentBookings) =>
+          currentBookings.map((booking) =>
+            booking._id === bookingId
+              ? { ...booking, status: status.toLowerCase() }
+              : booking,
+          ),
+        );
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
-
-  const currency = import.meta.env.VITE_CURRENCY || "$";
 
   return (
     <main className="min-w-0 flex-1 bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
@@ -84,7 +109,9 @@ const ManageBooking = () => {
                         scope="row"
                         className="whitespace-nowrap px-6 py-4 font-semibold text-gray-900"
                       >
-                        {booking.car.brand.trim()} {booking.car.model}
+                        {booking.car
+                          ? `${booking.car.brand.trim()} ${booking.car.model}`
+                          : "Car unavailable"}
                       </th>
                       <td className="whitespace-nowrap px-6 py-4 text-gray-600">
                         {formatDate(booking.pickupDate)} to{" "}
@@ -113,8 +140,10 @@ const ManageBooking = () => {
                           className="sr-only"
                           htmlFor={`booking-${booking._id}`}
                         >
-                          Update status for {booking.car.brand.trim()}{" "}
-                          {booking.car.model}
+                          Update status for{" "}
+                          {booking.car
+                            ? `${booking.car.brand.trim()} ${booking.car.model}`
+                            : "unavailable car"}
                         </label>
                         <select
                           id={`booking-${booking._id}`}
@@ -127,6 +156,7 @@ const ManageBooking = () => {
                           onChange={(event) =>
                             updateBookingStatus(booking._id, event.target.value)
                           }
+                          disabled={!booking.car}
                           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                         >
                           {bookingStatuses.map((bookingStatus) => (

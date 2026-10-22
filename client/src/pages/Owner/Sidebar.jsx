@@ -1,27 +1,44 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ownerMenuLinks } from "../../assets/assets";
+import { ownerMenuLinks, dummyUserData } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const Sidebar = () => {
   const { user, axios, fetchUser } = useAppContext();
   const location = useLocation();
-  const [imageUrl, setImageUrl] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
 
-  const updateImage = async () => {};
-
-  useEffect(() => {
-    return () => {
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+  useEffect(
+    () => () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
       }
-    };
-  }, [imageUrl]);
+    },
+    [imagePreview],
+  );
 
-  const handleImageChange = (event) => {
+  const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setImageUrl(URL.createObjectURL(file));
+    event.target.value = "";
+    if (!file) return;
+
+    setImagePreview(URL.createObjectURL(file));
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const { data } = await axios.post("/api/owner/update-image", formData);
+      if (data.success) {
+        await fetchUser();
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+      setImagePreview("");
+    } catch (error) {
+      setImagePreview("");
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -33,8 +50,8 @@ const Sidebar = () => {
           className="group relative mb-3 h-20 w-20 cursor-pointer overflow-hidden rounded-full border-2 border-gray-200"
         >
           <img
-            src={imageUrl || dummyUserData.image}
-            alt={`${dummyUserData.name}'s profile`}
+            src={imagePreview || user?.image || dummyUserData.image}
+            alt={`${user?.name || dummyUserData.name}'s profile`}
             className="h-full w-full object-cover"
           />
           <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -49,7 +66,7 @@ const Sidebar = () => {
           />
         </label>
         <p className="text-sm font-semibold text-gray-800">
-          {dummyUserData.name}
+          {user?.name || dummyUserData.name}
         </p>
         <p className="mt-1 text-xs text-gray-500">Owner</p>
       </div>
