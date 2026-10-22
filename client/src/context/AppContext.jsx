@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { createContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -24,7 +24,7 @@ export const AppProvider = ({ children }) => {
   //function to check if user is login
   const fetchUser = async () => {
     try {
-      const { data } = await axios.get("/api.user/data");
+      const { data } = await axios.get("/api/user/data");
       if (data.success) {
         setUser(data.user);
         setIsOwner(data.user.role === "owner");
@@ -66,7 +66,7 @@ export const AppProvider = ({ children }) => {
   //useEffect to fetch user data when token is available
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `${token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       fetchUser();
     }
   }, [token]);

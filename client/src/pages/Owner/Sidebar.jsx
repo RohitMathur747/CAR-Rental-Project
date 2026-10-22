@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { dummyUserData, ownerMenuLinks } from "../../assets/assets";
+import { ownerMenuLinks } from "../../assets/assets";
+import { useAppContext } from "../../context/AppContext";
 
 const Sidebar = () => {
+  const { user, axios, fetchUser } = useAppContext();
   const location = useLocation();
   const [imageUrl, setImageUrl] = useState("");
+
+  const updateImage = async () => {};
 
   useEffect(() => {
     return () => {
