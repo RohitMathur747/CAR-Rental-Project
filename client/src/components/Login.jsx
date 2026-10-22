@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import { navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 const Login = () => {
-  const { setShowLogin, axios, token, setToken } = useAppContext();
+  const { setShowLogin, axios, setToken } = useAppContext();
+  const navigate = useNavigate();
 
   const [state, setState] = useState("login");
   const [name, setName] = useState("");
@@ -21,7 +22,7 @@ const Login = () => {
       });
       if (data.success) {
         navigate("/");
-        setToken(data.setToken);
+        setToken(data.token);
         localStorage.setItem("token", data.token);
         setShowLogin(false);
       } else {
