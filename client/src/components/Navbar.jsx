@@ -3,6 +3,7 @@ import { assets, menuLinks } from "../assets/assets.js";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext.jsx";
 import { toast } from "react-hot-toast";
+import { motion } from "motion/react";
 
 const Navbar = () => {
   const { setShowLogin, user, logout, isOwner, axios, setIsOwner } =
@@ -29,13 +30,21 @@ const Navbar = () => {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
       className={`relative z-50 flex items-center justify-between border-b border-slate-200 
         px-6 py-4 text-slate-600 transition-colors md:px-16 lg:px-24 xl:px-32 
         ${isHome ? "bg-light" : "bg-white"}`}
     >
       <Link to="/" onClick={() => setOpen(false)} aria-label="Go to homepage">
-        <img src={assets.logo} alt="Car rental home" className="h-8 w-auto" />
+        <motion.img
+          whileHover={{ scale: 1.05 }}
+          src={assets.logo}
+          alt="Car rental home"
+          className="h-8 w-auto"
+        />
       </Link>
 
       <div
@@ -123,7 +132,7 @@ const Navbar = () => {
           className="h-4 w-5"
         />
       </button>
-    </div>
+    </motion.div>
   );
 };
 

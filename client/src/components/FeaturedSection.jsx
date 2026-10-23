@@ -3,6 +3,7 @@ import CarCard from "../components/CarCard";
 import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { motion } from "motion/react";
 
 const FeaturedSection = () => {
   const navigate = useNavigate();
@@ -10,13 +11,23 @@ const FeaturedSection = () => {
 
   return (
     <section className="bg-gray-100 px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-center">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="mx-auto flex w-full max-w-7xl flex-col items-center"
+      >
         <Title
           title="Featured Vehicles"
           subTitle="Explore our selection of premium vehicles available for your next adventure"
         />
 
-        <div className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+        >
           {cars.slice(0, 6).map((car) => (
             <Link
               key={car._id}
@@ -31,9 +42,12 @@ const FeaturedSection = () => {
               No vehicles are currently available.
             </p>
           )}
-        </div>
+        </motion.div>
 
-        <button
+        <motion.button
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
           type="button"
           onClick={() => {
             navigate("/cars");
@@ -43,8 +57,8 @@ const FeaturedSection = () => {
         >
           <span>Explore all Cars</span>
           <img src={assets.arrow_icon} alt="" className="h-4 w-4" />
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     </section>
   );
 };
