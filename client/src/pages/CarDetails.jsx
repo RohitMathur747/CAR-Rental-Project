@@ -1,34 +1,72 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { assets, dummyCarData } from "../assets/assets";
+import { toast } from "react-hot-toast";
+import { assets } from "../assets/assets";
+import { useAppContext } from "../context/AppContext";
 
 const CarDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const car = dummyCarData.find((item) => item._id === id);
-  const [pickupDate, setPickupDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
   const [bookingMessage, setBookingMessage] = useState("");
+  const [isBooking, setIsBooking] = useState(false);
 
+  const {
+    cars,
+    axios,
+    pickupDate,
+    setPickupDate,
+    returnDate,
+    setReturnDate,
+    token,
+    setShowLogin,
+    currency,
+  } = useAppContext();
+  const car = cars.find((item) => item._id === id);
   const today = new Date().toISOString().split("T")[0];
+  const pricePerDay = car?.price_per_day ?? car?.pricePerDay;
   const rentalDays =
-    pickupDate && returnDate
-      ? Math.max(
-          1,
-          Math.ceil(
-            (new Date(`${returnDate}T00:00:00`) -
-              new Date(`${pickupDate}T00:00:00`)) /
-              (1000 * 60 * 60 * 24),
-          ),
+    pickupDate && returnDate && returnDate > pickupDate
+      ? Math.ceil(
+          (new Date(`${returnDate}T00:00:00`) -
+            new Date(`${pickupDate}T00:00:00`)) /
+            (1000 * 60 * 60 * 24),
         )
       : 0;
 
-  const handleBooking = (event) => {
+  const handleBooking = async (event) => {
     event.preventDefault();
-    setBookingMessage({
-      carId: id,
-      text: "Online reservations are not enabled yet. Your selected dates are ready to book.",
-    });
+
+    if (!token) {
+      setShowLogin(true);
+      return;
+    }
+
+    if (!pickupDate || !returnDate || returnDate <= pickupDate) {
+      toast.error("Select a return date after the pick-up date");
+      return;
+    }
+
+    setIsBooking(true);
+    setBookingMessage("");
+
+    try {
+      const { data } = await axios.post("/api/bookings/create", {
+        car: id,
+        pickupDate,
+        returnDate,
+      });
+
+      if (!data.success) {
+        throw new Error(data.message || "Unable to create booking");
+      }
+
+      setBookingMessage(data.message);
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   return car ? (
@@ -88,7 +126,7 @@ const CarDetails = () => {
             </div>
             <div>
               <p className="flex items-center gap-2 text-sm text-gray-500">
-                <img src={assets.carIcon} alt="" className="h-4 w-4" />
+                <img src={assets.car_icon} alt="" className="h-4 w-4" />
                 Model no.
               </p>
               <p className="mt-1 font-medium text-gray-900">
@@ -107,40 +145,36 @@ const CarDetails = () => {
             </p>
           </section>
 
-          <section className="mt-8 border-t border-gray-200 pt-7">
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-950">
-              <img src={assets.check_icon} alt="" className="h-5 w-5" />
-              Features
-            </h2>
-            <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {[
-                "360° camera",
-                "GPS navigation",
-                "Rear-view mirror",
-                "Bluetooth",
-                "Heated seats",
-              ].map((feature) => (
-                <li
-                  key={feature}
-                  className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-700"
-                >
-                  <img
-                    src={assets.check_icon}
-                    alt=""
-                    className="h-4 w-4 shrink-0"
-                  />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </section>
+          {car.features?.length > 0 && (
+            <section className="mt-8 border-t border-gray-200 pt-7">
+              <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-950">
+                <img src={assets.check_icon} alt="" className="h-5 w-5" />
+                Features
+              </h2>
+              <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {car.features.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-700"
+                  >
+                    <img
+                      src={assets.check_icon}
+                      alt=""
+                      className="h-4 w-4 shrink-0"
+                    />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </section>
 
         <aside className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-8">
           <div className="mb-6 flex items-baseline gap-2">
             <span className="text-3xl font-semibold text-gray-950">
-              {import.meta.env.VITE_CURRENCY || "$"}
-              {car.pricePerDay}
+              {currency || "$"}
+              {pricePerDay}
             </span>
             <span className="text-sm text-gray-500">per day</span>
           </div>
@@ -179,29 +213,30 @@ const CarDetails = () => {
             {rentalDays > 0 && (
               <div className="flex justify-between border-t border-gray-200 pt-4 text-sm text-gray-600">
                 <span>
-                  {import.meta.env.VITE_CURRENCY || "$"}
-                  {car.pricePerDay} × {rentalDays}{" "}
+                  {currency || "$"}
+                  {pricePerDay} × {rentalDays}{" "}
                   {rentalDays === 1 ? "day" : "days"}
                 </span>
                 <span className="font-semibold text-gray-900">
-                  {import.meta.env.VITE_CURRENCY || "$"}
-                  {car.pricePerDay * rentalDays}
+                  {currency || "$"}
+                  {pricePerDay * rentalDays}
                 </span>
               </div>
             )}
 
             <button
               type="submit"
+              disabled={isBooking}
               className="w-full rounded-lg bg-primary px-5 py-3 font-semibold text-white transition hover:bg-primary-dull focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
-              Book now
+              {isBooking ? "Booking..." : "Book now"}
             </button>
             <p className="text-center text-sm text-gray-500">
               No credit card details to reserve
             </p>
-            {bookingMessage?.carId === id && (
+            {bookingMessage && (
               <p role="status" className="text-sm leading-5 text-gray-600">
-                {bookingMessage.text}
+                {bookingMessage}
               </p>
             )}
           </form>
