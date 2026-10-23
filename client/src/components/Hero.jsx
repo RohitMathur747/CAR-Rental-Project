@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { assets, cityList } from "../assets/assets";
 import { useAppContext } from "../context/AppContext";
+import { delay, motion } from "motion/react";
 
 const Hero = () => {
   const [pickupLocation, setPickupLocation] = useState("");
@@ -19,11 +20,24 @@ const Hero = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-4 py-8">
-      <h1 className="text-4xl md:text-5xl font-semibold">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      className="flex min-h-screen flex-col items-center justify-center bg-gray-100 px-4 py-8"
+    >
+      <motion.h1
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="text-4xl md:text-5xl font-semibold"
+      >
         Luxury Cars on Rent
-      </h1>
-      <form
+      </motion.h1>
+      <motion.form
+        initial={{ scale: 0.95, opacity: 0, y: 50 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
         onSubmit={handleSearch}
         className="mt-6 w-full max-w-5xl rounded-lg bg-white p-3 shadow-md"
       >
@@ -76,12 +90,14 @@ const Hero = () => {
             />
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="submit"
             className="w-full rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Search
-          </button>
+          </motion.button>
 
           {/* <button
             type="button"
@@ -90,13 +106,16 @@ const Hero = () => {
             Book Now
           </button> */}
         </div>
-      </form>
-      <img
+      </motion.form>
+      <motion.img
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
         src={assets.main_car}
         alt="car"
         className="max-h-74 max-w-full object-contain"
       />
-    </div>
+    </motion.div>
   );
 };
 

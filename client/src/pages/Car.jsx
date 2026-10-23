@@ -1,14 +1,70 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import CarCard from "../components/CarCard";
-import { assets, dummyCarData } from "../assets/assets";
+import { assets } from "../assets/assets";
+import { useAppContext } from "../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const Car = () => {
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [category, setCategory] = useState("All categories");
 
-  const availableCars = dummyCarData.filter(
+  const [searchParams] = useSearchParams();
+  const pickupLocation = searchParams.get("pickupLocation");
+  const pickupDate = searchParams.get("pickupDate");
+  const returnDate = searchParams.get("returnDate");
+  const hasSearchData = Boolean(pickupLocation && pickupDate && returnDate);
+
+  const { cars, axios } = useAppContext();
+  const [searchAvailableCars, setSearchAvailableCars] = useState([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+
+  useEffect(() => {
+    if (!hasSearchData) {
+      setSearchAvailableCars([]);
+      setIsCheckingAvailability(false);
+      return;
+    }
+
+    let isCurrentRequest = true;
+    setIsCheckingAvailability(true);
+
+    const checkAvailability = async () => {
+      try {
+        const { data } = await axios.post("/api/bookings/check-availability", {
+          location: pickupLocation,
+          pickupDate,
+          returnDate,
+        });
+
+        if (!data.success) {
+          throw new Error(data.message || "Unable to check car availability");
+        }
+
+        if (isCurrentRequest) {
+          setSearchAvailableCars(data.availableCars);
+        }
+      } catch (error) {
+        if (isCurrentRequest) {
+          setSearchAvailableCars([]);
+          toast.error(error.response?.data?.message || error.message);
+        }
+      } finally {
+        if (isCurrentRequest) {
+          setIsCheckingAvailability(false);
+        }
+      }
+    };
+
+    checkAvailability();
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [axios, hasSearchData, pickupDate, pickupLocation, returnDate]);
+
+  const availableCars = (hasSearchData ? searchAvailableCars : cars).filter(
     (car) => car.isAvailable || car.isAvaliable,
   );
   const categories = [...new Set(availableCars.map((car) => car.category))];
@@ -136,7 +192,9 @@ const Car = () => {
             </div>
           ) : (
             <p className="rounded-lg border border-dashed border-gray-300 px-5 py-12 text-center text-gray-600">
-              No cars match your search. Try another make, model, or feature.
+              {isCheckingAvailability
+                ? "Checking car availability..."
+                : "No cars match your search. Try another make, model, or feature."}
             </p>
           )}
         </section>
