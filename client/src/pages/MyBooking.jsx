@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
+import { motion } from "motion/react";
 
 const MyBooking = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,20 +56,29 @@ const MyBooking = () => {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 border-b border-gray-200 pb-6">
+        <motion.header
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="mb-8 border-b border-gray-200 pb-6"
+        >
           <h1 className="text-3xl font-semibold text-gray-950 sm:text-4xl">
             My Bookings
           </h1>
           <p className="mt-3 text-gray-600">
             View and manage your car bookings
           </p>
-        </header>
+        </motion.header>
 
         <section aria-label="Your car bookings" className="space-y-5">
           {isLoading ? (
-            <p className="py-8 text-center text-gray-600">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-8 text-center text-gray-600"
+            >
               Loading your bookings...
-            </p>
+            </motion.p>
           ) : visibleBookings.length > 0 ? (
             visibleBookings.map((booking, index) => {
               const bookingNumber = firstBookingIndex + index + 1;
@@ -80,8 +90,12 @@ const MyBooking = () => {
               }
 
               return (
-                <article
+                <motion.article
                   key={booking._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: index * 0.08 }}
+                  whileHover={{ y: -4 }}
                   className="grid overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:grid-cols-[320px_minmax(0,1fr)_200px]"
                 >
                   <div className="border-b border-gray-200 p-2.5 lg:border-b-0 lg:border-r">
@@ -179,18 +193,25 @@ const MyBooking = () => {
                       </p>
                     </div>
                   </div>
-                </article>
+                </motion.article>
               );
             })
           ) : (
-            <p className="py-8 text-center text-gray-600">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-8 text-center text-gray-600"
+            >
               No bookings found.
-            </p>
+            </motion.p>
           )}
         </section>
 
         {pageCount > 1 && (
-          <nav
+          <motion.nav
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
             aria-label="Booking pages"
             className="mt-8 flex items-center justify-center gap-2"
           >
@@ -229,7 +250,7 @@ const MyBooking = () => {
             >
               Next
             </button>
-          </nav>
+          </motion.nav>
         )}
       </div>
     </main>

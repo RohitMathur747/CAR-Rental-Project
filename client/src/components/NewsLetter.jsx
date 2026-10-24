@@ -1,17 +1,40 @@
 import React from "react";
+import { motion } from "motion/react";
 
 const NewsLetter = () => {
   return (
     <>
-      <div className="flex flex-col items-center gap-2 text-sm px-3 py-1 pb-5 mb-20">
-        <h1 className="text-4xl md:text-6xl font-semibold text-gray-900 mt-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transitions={{ duration: 0.6, ease: "easeOut" }}
+        viewport={{ once: true, amount: 0.3 }}
+        className="flex flex-col items-center gap-2 text-sm px-3 py-1 pb-5 mb-20"
+      >
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transitions={{ duration: 0.5, delay: 0.5 }}
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-4xl md:text-6xl font-semibold text-gray-900 mt-4"
+        >
           Never Miss a Deal
-        </h1>
-        <p className="max-w-lg text-center text-slate-500 mt-6">
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transitions={{ duration: 0.3, delay: 0.5 }}
+          className="max-w-lg text-center text-slate-500 mt-6"
+        >
           Subscibe to get the latest offers, new arrivals, and exclusive
           discounts
-        </p>
-        <form className="relative flex items-center rounded-md border border-slate-200 mt-6 text-sm max-w-md w-full">
+        </motion.p>
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transitions={{ duration: 0.4, delay: 0.5 }}
+          className="relative flex items-center rounded-md border border-slate-200 mt-6 text-sm max-w-md w-full"
+        >
           <svg
             className="absolute left-3"
             width="19"
@@ -48,8 +71,8 @@ const NewsLetter = () => {
           >
             Subscribe now
           </button>
-        </form>
-      </div>
+        </motion.form>
+      </motion.div>
     </>
   );
 };
