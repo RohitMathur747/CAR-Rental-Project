@@ -4,6 +4,7 @@ import CarCard from "../components/CarCard";
 import { assets } from "../assets/assets";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
+import { motion } from "motion/react";
 
 const Car = () => {
   const [search, setSearch] = useState("");
@@ -92,16 +93,36 @@ const Car = () => {
   return (
     <main className="min-h-screen w-full bg-gray-100">
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <section className="flex flex-col items-center border-b border-gray-200 pb-8 text-center">
-          <h1 className="text-3xl font-semibold text-gray-950 sm:text-4xl">
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col items-center border-b border-gray-200 pb-8 text-center"
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.1 }}
+            className="text-3xl font-semibold text-gray-950 sm:text-4xl"
+          >
             Available Cars
-          </h1>
-          <p className="mt-3 max-w-2xl leading-6 text-gray-600">
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.18 }}
+            className="mt-3 max-w-2xl leading-6 text-gray-600"
+          >
             Browse our selection of premium vehicles for your next adventure
-          </p>
+          </motion.p>
 
           <div className="relative mt-7 flex w-full max-w-3xl items-center gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
+            >
               <img
                 src={assets.search_icon}
                 alt=""
@@ -115,13 +136,14 @@ const Car = () => {
                 aria-label="Search cars by make, model or feature"
                 className="w-full min-w-0 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
               />
-            </div>
-            <button
+            </motion.div>
+            <motion.button
               type="button"
               aria-label="Toggle car filters"
               aria-expanded={showFilters}
               aria-controls="car-filters"
               onClick={() => setShowFilters((visible) => !visible)}
+              whileTap={{ scale: 0.96 }}
               className={`grid h-12 w-12 shrink-0 place-items-center rounded-lg border transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                 showFilters
                   ? "border-primary bg-primary/5"
@@ -129,11 +151,15 @@ const Car = () => {
               }`}
             >
               <img src={assets.filter_icon} alt="" className="h-5 w-5" />
-            </button>
+            </motion.button>
 
             {showFilters && (
-              <div
+              <motion.div
                 id="car-filters"
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
                 className="absolute right-0 top-14 z-10 w-64 rounded-lg border border-gray-200 bg-white p-4 shadow-lg"
               >
                 <label
@@ -153,13 +179,18 @@ const Car = () => {
                     <option key={item}>{item}</option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
             )}
           </div>
-        </section>
+        </motion.section>
 
         <section className="pt-8">
-          <div className="mb-6 flex items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
+            className="mb-6 flex items-center justify-between gap-4"
+          >
             <h2 className="text-sm font-semibold text-gray-950">
               Showing {filteredCars.length}{" "}
               {filteredCars.length === 1 ? "car" : "cars"}
@@ -176,26 +207,38 @@ const Car = () => {
                 Clear filters
               </button>
             )}
-          </div>
+          </motion.div>
 
           {filteredCars.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredCars.map((car) => (
-                <Link
+              {filteredCars.map((car, index) => (
+                <motion.div
                   key={car._id}
-                  to={`/car-deatils/${car._id}`}
-                  className="block h-full rounded-xl transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: index * 0.08 }}
+                  whileHover={{ y: -6, scale: 1.01 }}
                 >
-                  <CarCard car={car} />
-                </Link>
+                  <Link
+                    to={`/car-deatils/${car._id}`}
+                    className="block h-full rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    <CarCard car={car} />
+                  </Link>
+                </motion.div>
               ))}
             </div>
           ) : (
-            <p className="rounded-lg border border-dashed border-gray-300 px-5 py-12 text-center text-gray-600">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.35 }}
+              className="rounded-lg border border-dashed border-gray-300 px-5 py-12 text-center text-gray-600"
+            >
               {isCheckingAvailability
                 ? "Checking car availability..."
                 : "No cars match your search. Try another make, model, or feature."}
-            </p>
+            </motion.p>
           )}
         </section>
       </div>
